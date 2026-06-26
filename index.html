@@ -1,1 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seeds Movement · Ubatuba</title>
+  <meta name="description" content="Movimento de evangelismo nas ruas de Ubatuba. Toda Sexta às 20H na Pistinha de Skate.">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: #080808; color: #f0eeea; overflow-x: hidden; font-family: 'Barlow', sans-serif; }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; max-width: 100%; }
+
+    /* ── Animations ─────────────────────────────────────────────── */
+    @keyframes scrollDot {
+      0%, 100% { opacity: 0; transform: translateY(-100%); }
+      50%       { opacity: 1; transform: translateY(100%); }
+    }
+    @keyframes marqueeAnim {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    @keyframes heroIn {
+      from { opacity: 0; transform: translateY(48px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Scroll reveal ───────────────────────────────────────────── */
+    .reveal   { opacity: 0; transform: translateY(56px);  transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+    .reveal-l { opacity: 0; transform: translateX(-56px); transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+    .reveal-r { opacity: 0; transform: translateX(56px);  transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1); }
+    .reveal.vis, .reveal-l.vis, .reveal-r.vis { opacity: 1; transform: none; }
+    .d1 { transition-delay: .12s !important; }
+    .d2 { transition-delay: .24s !important; }
+    .d3 { transition-delay: .38s !important; }
+    .d4 { transition-delay: .52s !important; }
+
+    /* ── Nav ─────────────────────────────────────────────────────── */
+    #sm-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 24px 56px;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: background .35s, padding .35s, border-bottom .35s;
+    }
+    .nav-brand {
+      font-family: 'Bebas Neue', sans-serif; font-size: 24px;
+      letter-spacing: 4px; color: #e6c228;
+    }
+    .nav-links { display: flex; gap: 40px; align-items: center; }
+    .nav-link {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+      font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase;
+      opacity: .6; transition: opacity .2s, color .2s; cursor: pointer;
+    }
+    .nav-link:hover { opacity: 1; color: #e6c228; }
+
+    /* ── Hamburger ───────────────────────────────────────────────── */
+    #hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; padding: 6px; background: none; border: none; z-index: 1002;
+    }
+    #hamburger span {
+      display: block; width: 24px; height: 1.5px;
+      background: #f0eeea; transition: all .3s;
+    }
+    #hamburger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    #hamburger.open span:nth-child(2) { opacity: 0; }
+    #hamburger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* ── Mobile menu ─────────────────────────────────────────────── */
+    #mobile-menu {
+      display: none; position: fixed; inset: 0; background: #080808;
+      z-index: 999; flex-direction: column; align-items: center;
+      justify-content: center; gap: 28px;
+    }
+    #mobile-menu.open { display: flex; }
+    .mob-link {
+      font-family: 'Bebas Neue', sans-serif; font-size: 52px;
+      letter-spacing: 3px; color: #f0eeea; opacity: .6;
+      transition: color .2s, opacity .2s;
+    }
+    .mob-link:hover { color: #e6c228; opacity: 1; }
+    #mob-close {
+      position: absolute; top: 28px; right: 28px;
+      font-size: 30px; color: #f0eeea; opacity: .35;
+      background: none; border: none; cursor: pointer;
+      line-height: 1; font-family: 'Barlow Condensed', sans-serif;
+    }
+    .mob-divider { width: 40px; height: 1px; background: #e6c228; opacity: .3; }
+
+    /* ── Hero ────────────────────────────────────────────────────── */
+    #hero {
+      height: 100vh; position: relative;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; overflow: hidden;
+    }
+    #hero-bg {
+      position: absolute; inset: 0; width: 100%; height: 120%;
+      object-fit: cover; object-position: center 30%;
+      filter: brightness(.28); will-change: transform;
+    }
+    .hero-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(8,8,8,.1) 0%, rgba(8,8,8,.55) 65%, #080808 100%);
+    }
+    .hero-content {
+      position: relative; text-align: center; padding: 0 24px;
+      animation: heroIn 1s .1s cubic-bezier(.16,1,.3,1) both;
+    }
+    .hero-eyebrow {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+      font-weight: 600; letter-spacing: 6px; text-transform: uppercase;
+      color: #e6c228; margin-bottom: 20px; opacity: .9;
+    }
+    .hero-title-main {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(88px, 15vw, 210px);
+      line-height: .88; letter-spacing: 2px; color: #f0eeea;
+    }
+    .hero-title-sub {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(44px, 7.5vw, 105px);
+      line-height: 1; letter-spacing: 10px; color: #e6c228;
+    }
+    .hero-tagline {
+      margin-top: 36px; font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px; letter-spacing: 3.5px; text-transform: uppercase;
+      color: #f0eeea; opacity: .45;
+    }
+    .hero-scroll {
+      position: absolute; bottom: 52px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      opacity: .35; animation: heroIn 1s .6s both;
+    }
+    .hero-scroll-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    }
+    .hero-scroll-line {
+      width: 1px; height: 60px;
+      background: rgba(230,194,40,.4); position: relative; overflow: hidden;
+    }
+    .hero-scroll-dot {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent, #e6c228, transparent);
+      animation: scrollDot 1.9s ease infinite;
+    }
+
+    /* ── Marquee ─────────────────────────────────────────────────── */
+    .marquee-wrap {
+      background: #e6c228; overflow: hidden; padding: 15px 0;
+      white-space: nowrap; user-select: none;
+    }
+    .marquee-track {
+      display: inline-flex;
+      animation: marqueeAnim 22s linear infinite;
+    }
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      letter-spacing: 5px; color: #080808; padding: 0 48px;
+    }
+
+    /* ── Section labels ──────────────────────────────────────────── */
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px;
+      font-weight: 600; letter-spacing: 5px; text-transform: uppercase;
+      color: #e6c228; margin-bottom: 20px;
+    }
+
+    /* ── Sobre ───────────────────────────────────────────────────── */
+    #sobre {
+      padding: 120px 56px; max-width: 1240px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 100px; align-items: center;
+    }
+    .sobre-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 5.5vw, 82px);
+      line-height: .9; letter-spacing: 1px; margin-bottom: 36px;
+    }
+    .sobre-heading span { color: #e6c228; }
+    .sobre-text {
+      font-size: 16px; line-height: 1.75; opacity: .65;
+    }
+    .stats { display: flex; gap: 48px; }
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif; font-size: 52px;
+      color: #e6c228; line-height: 1;
+    }
+    .stat-label {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px;
+      letter-spacing: 3px; text-transform: uppercase;
+      opacity: .45; margin-top: 4px;
+    }
+    .sobre-img-wrap { position: relative; }
+    .sobre-img-wrap img {
+      width: 100%; aspect-ratio: 3/4; object-fit: cover; filter: brightness(.88);
+    }
+    .sobre-deco-br {
+      position: absolute; bottom: -24px; right: -24px;
+      width: 100px; height: 100px; border: 2px solid #e6c228; z-index: -1;
+    }
+    .sobre-deco-tl {
+      position: absolute; top: -24px; left: -24px;
+      width: 60px; height: 60px; border: 1px solid rgba(230,194,40,.3); z-index: -1;
+    }
+
+    /* ── Verse strip ─────────────────────────────────────────────── */
+    #verse-strip {
+      background: #0d0d0d; padding: 88px 56px; text-align: center;
+      border-top: 1px solid rgba(230,194,40,.08);
+      border-bottom: 1px solid rgba(230,194,40,.08);
+    }
+    .verse-text {
+      font-family: 'Barlow Condensed', sans-serif; font-style: italic;
+      font-size: clamp(22px, 3.2vw, 42px); line-height: 1.45;
+      max-width: 820px; margin: 0 auto; opacity: .88;
+    }
+    .verse-ref {
+      margin-top: 22px; font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px; letter-spacing: 5px; text-transform: uppercase; color: #e6c228;
+    }
+
+    /* ── Evento ──────────────────────────────────────────────────── */
+    #evento {
+      position: relative; min-height: 88vh;
+      display: flex; align-items: center; overflow: hidden;
+    }
+    #evento-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center; filter: brightness(.18);
+    }
+    .evento-grad {
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, rgba(8,8,8,.97) 45%, rgba(8,8,8,.3) 100%);
+    }
+    .evento-inner { position: relative; padding: 100px 80px; max-width: 680px; }
+    .evento-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(64px, 8.5vw, 124px); line-height: .86; margin-bottom: 48px;
+    }
+    .evento-heading span { color: #e6c228; }
+    .info-row {
+      display: flex; align-items: flex-start; gap: 18px; padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .info-row:first-child { border-top: 1px solid rgba(255,255,255,.07); }
+    .info-icon {
+      width: 42px; height: 42px; flex-shrink: 0; margin-top: 2px;
+      border: 1.5px solid rgba(230,194,40,.5);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .info-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 30px;
+      letter-spacing: 1px; line-height: 1;
+    }
+    .info-sub {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+      opacity: .45; letter-spacing: 1px; margin-top: 2px;
+    }
+
+    /* ── WhatsApp button ─────────────────────────────────────────── */
+    .wa-btn {
+      display: inline-flex; align-items: center; gap: 14px;
+      background: #e6c228; color: #080808;
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+      font-size: 17px; letter-spacing: 3px; text-transform: uppercase;
+      padding: 20px 44px; cursor: pointer;
+      transition: background .2s, transform .2s; border: none;
+    }
+    .wa-btn:hover { background: #f0eeea; transform: translateY(-3px); }
+
+    /* ── Gallery ─────────────────────────────────────────────────── */
+    #galeria { padding: 100px 56px; max-width: 1400px; margin: 0 auto; }
+    .gal-header { text-align: center; margin-bottom: 72px; }
+    .gal-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 7vw, 96px); line-height: .9; letter-spacing: 2px;
+    }
+    .gal-item { overflow: hidden; }
+    .gal-item img { transition: transform .55s cubic-bezier(.16,1,.3,1), filter .4s; }
+    .gal-item:hover img { transform: scale(1.06); filter: brightness(1.15); }
+    .gal-row1 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .gal-row2 { display: grid; grid-template-columns: 3fr 2fr; gap: 10px; margin-top: 10px; }
+    .gal-row3 { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 10px; }
+    .gal-row1 .gal-item img { width: 100%; aspect-ratio: 3/4; object-fit: cover; filter: brightness(.9); }
+    .gal-row2 .gal-item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; filter: brightness(.9); }
+    .gal-row3 .gal-item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; filter: brightness(.9); }
+
+    /* ── Contato ─────────────────────────────────────────────────── */
+    #contato {
+      padding: 120px 56px; text-align: center;
+      background: #0d0d0d; border-top: 1px solid rgba(230,194,40,.08);
+    }
+    .contato-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 8vw, 112px); line-height: .86; margin-bottom: 24px;
+    }
+    .contato-heading span { color: #e6c228; }
+    .contato-text {
+      font-size: 17px; opacity: .55; max-width: 480px;
+      margin: 0 auto 52px; line-height: 1.75;
+    }
+    .contact-meta {
+      margin-top: 88px; display: flex; justify-content: center;
+      gap: 0; flex-wrap: wrap;
+      border-top: 1px solid rgba(255,255,255,.06); padding-top: 64px;
+    }
+    .contact-meta-item { padding: 0 56px; border-right: 1px solid rgba(255,255,255,.07); }
+    .contact-meta-item:last-child { border-right: none; }
+    .contact-meta-label {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 11px;
+      letter-spacing: 4px; text-transform: uppercase; opacity: .35; margin-bottom: 10px;
+    }
+    .contact-meta-value {
+      font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    footer {
+      background: #080808; padding: 32px 56px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid rgba(255,255,255,.05);
+    }
+    .footer-brand {
+      font-family: 'Bebas Neue', sans-serif; font-size: 20px;
+      letter-spacing: 4px; color: #e6c228;
+    }
+    .footer-copy {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 12px;
+      letter-spacing: 2px; text-transform: uppercase; opacity: .3;
+    }
+
+    /* ── Mobile ──────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #hamburger { display: flex !important; }
+      .nav-links  { display: none !important; }
+      #sm-nav     { padding: 20px 24px !important; }
+
+      .hero-eyebrow    { font-size: 11px !important; letter-spacing: 3px !important; }
+      .hero-tagline    { font-size: 13px !important; letter-spacing: 2px !important; }
+
+      #sobre {
+        grid-template-columns: 1fr !important;
+        gap: 40px !important;
+        padding: 64px 20px !important;
+      }
+      .sobre-deco-br, .sobre-deco-tl { display: none; }
+
+      #verse-strip { padding: 56px 20px !important; }
+
+      .evento-inner { padding: 64px 24px !important; max-width: 100% !important; }
+      #evento       { min-height: auto !important; }
+
+      #galeria { padding: 64px 16px !important; }
+      .gal-row1 { grid-template-columns: 1fr 1fr !important; }
+      .gal-row1 .gal-item:last-child { display: none; }
+      .gal-row2 { grid-template-columns: 1fr !important; }
+      .gal-row3 { grid-template-columns: 1fr !important; }
+
+      #contato { padding: 72px 20px !important; }
+      .contact-meta { flex-direction: column !important; align-items: center !important; }
+      .contact-meta-item {
+        padding: 20px 0 !important; border-right: none !important;
+        width: 100%; border-bottom: 1px solid rgba(255,255,255,.07);
+      }
+      .contact-meta-item:last-child { border-bottom: none !important; }
+
+      .wa-btn { padding: 16px 24px !important; font-size: 15px !important; letter-spacing: 2px !important; width: 100%; justify-content: center; }
+
+      footer { flex-direction: column !important; gap: 10px !important; text-align: center !important; padding: 28px 20px !important; }
+      .footer-copy { font-size: 10px !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- FIXED NAV -->
+<nav id="sm-nav">
+  <div class="nav-brand">SEEDS MOVEMENT</div>
+  <div class="nav-links">
+    <a href="#sobre"   class="nav-link">Sobre</a>
+    <a href="#evento"  class="nav-link">Evento</a>
+    <a href="#galeria" class="nav-link">Galeria</a>
+    <a href="#contato" class="nav-link">Contato</a>
+  </div>
+  <button id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div id="mobile-menu" role="dialog" aria-modal="true">
+  <button id="mob-close" aria-label="Fechar">✕</button>
+  <div class="mob-divider"></div>
+  <a href="#sobre"   class="mob-link">Sobre</a>
+  <a href="#evento"  class="mob-link">Evento</a>
+  <a href="#galeria" class="mob-link">Galeria</a>
+  <a href="#contato" class="mob-link">Contato</a>
+  <div class="mob-divider"></div>
+  <a class="wa-btn" href="https://wa.me/5512997029134" target="_blank" rel="noopener"
+     style="margin-top:8px;font-size:15px;letter-spacing:2px;padding:16px 32px;">WhatsApp</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <img id="hero-bg"
+       src="uploads/imgi_12_660948891_17910866076361886_5670692034432309821_n.jpg"
+       alt="">
+  <div class="hero-gradient"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">Evangelismo nas Ruas · Ubatuba</div>
+    <div class="hero-title-main">SEEDS</div>
+    <div class="hero-title-sub">MOVEMENT</div>
+    <div class="hero-tagline">Toda Sexta · 20H · Pistinha de Skate</div>
+  </div>
+
+  <div class="hero-scroll">
+    <span class="hero-scroll-label">Scroll</span>
+    <div class="hero-scroll-line">
+      <div class="hero-scroll-dot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE TICKER -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">SEEDS MOVEMENT</span>
+    <span class="marquee-item">UBATUBA</span>
+    <span class="marquee-item">TODA SEXTA ÀS 20H</span>
+    <span class="marquee-item">EVANGELISMO NAS RUAS</span>
+    <span class="marquee-item">SEEDS MOVEMENT</span>
+    <span class="marquee-item">UBATUBA</span>
+    <span class="marquee-item">TODA SEXTA ÀS 20H</span>
+    <span class="marquee-item">EVANGELISMO NAS RUAS</span>
+  </div>
+</div>
+
+<!-- SOBRE -->
+<section id="sobre">
+  <div>
+    <div class="section-label reveal">O Movimento</div>
+    <h2 class="sobre-heading reveal d1">
+      UMA SEMENTE<br>
+      <span>QUE TRANSFORMA</span><br>
+      UMA CIDADE
+    </h2>
+    <p class="sobre-text reveal d2" style="margin-bottom:20px;">
+      O Seeds Movement é um movimento de evangelismo nas ruas de Ubatuba, liderado por Davi Rodrigues e composto por jovens de diversas igrejas da cidade — com maioria da Igreja Ágape.
+    </p>
+    <p class="sobre-text reveal d3" style="margin-bottom:48px;">
+      Nosso propósito é ir às ruas, plantar sementes do Evangelho e ver vidas transformadas pelo poder de Jesus Cristo.
+    </p>
+    <div class="stats reveal d4">
+      <div>
+        <div class="stat-number">+50</div>
+        <div class="stat-label">Jovens</div>
+      </div>
+      <div>
+        <div class="stat-number">+2</div>
+        <div class="stat-label">Anos</div>
+      </div>
+      <div>
+        <div class="stat-number">∞</div>
+        <div class="stat-label">Vidas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sobre-img-wrap reveal-r">
+    <img src="uploads/imgi_9_696559184_17916944130361886_7703442581484422668_n.jpg"
+         alt="Seeds Movement team">
+    <div class="sobre-deco-br"></div>
+    <div class="sobre-deco-tl"></div>
+  </div>
+</section>
+
+<!-- VERSE STRIP -->
+<div id="verse-strip">
+  <p class="verse-text reveal">
+    "Ide por todo o mundo e pregai o evangelho a toda criatura."
+  </p>
+  <div class="verse-ref reveal d1">Marcos 16:15</div>
+</div>
+
+<!-- EVENTO -->
+<section id="evento">
+  <img id="evento-bg"
+       src="uploads/imgi_58_569784406_17890450536361886_3801521192420522923_n.jpg"
+       alt="">
+  <div class="evento-grad"></div>
+
+  <div class="evento-inner">
+    <div class="section-label reveal">Próximo Encontro</div>
+    <h2 class="evento-heading reveal d1">
+      TODA<br><span>SEXTA-FEIRA</span>
+    </h2>
+
+    <div class="reveal d2">
+      <div class="info-row">
+        <div class="info-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e6c228" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div>
+          <div class="info-title">20H00</div>
+          <div class="info-sub">Horário de início</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e6c228" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="info-title">PISTINHA DE SKATE</div>
+          <div class="info-sub">Ubatuba, SP</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e6c228" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="info-title">LOUVOR + PREGAÇÃO</div>
+          <div class="info-sub">Entrada livre para todos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal d3" style="margin-top:48px;">
+      <a class="wa-btn"
+         href="https://wa.me/5512997029134?text=Oi%21+Quero+saber+mais+sobre+o+Seeds+Movement%21"
+         target="_blank" rel="noopener">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Quero Participar
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- GALERIA -->
+<section id="galeria">
+  <div class="gal-header reveal">
+    <div class="section-label">Registros</div>
+    <h2 class="gal-title">GALERIA</h2>
+  </div>
+
+  <!-- Row 1: 3 portraits -->
+  <div class="gal-row1">
+    <div class="gal-item reveal">
+      <img src="uploads/imgi_9_696559184_17916944130361886_7703442581484422668_n.jpg"
+           style="object-position:center 20%;" alt="Seeds Movement">
+    </div>
+    <div class="gal-item reveal d1">
+      <img src="uploads/imgi_42_486666629_17864191041361886_917375221358939347_n.jpeg"
+           style="object-position:center 10%;" alt="">
+    </div>
+    <div class="gal-item reveal d2">
+      <img src="uploads/imgi_40_489797048_17865932082361886_1049122866407666861_n.jpeg"
+           style="object-position:center center;" alt="">
+    </div>
+  </div>
+
+  <!-- Row 2: wide + portrait -->
+  <div class="gal-row2">
+    <div class="gal-item reveal d1">
+      <img src="uploads/imgi_26_527584304_17880751797361886_4369656364062525430_n.jpg"
+           style="object-position:center 40%;" alt="Equipe Seeds Movement">
+    </div>
+    <div class="gal-item reveal d2">
+      <img src="uploads/imgi_59_574665442_17890450545361886_6514501992374050632_n.jpg"
+           style="object-position:center top;" alt="">
+    </div>
+  </div>
+
+  <!-- Row 3: two landscapes -->
+  <div class="gal-row3">
+    <div class="gal-item reveal d1">
+      <img src="uploads/imgi_7_724129231_17922030933361886_5425463475626662840_n.webp"
+           style="object-position:center 20%;" alt="">
+    </div>
+    <div class="gal-item reveal d2">
+      <img src="uploads/imgi_25_532126129_17881605567361886_800218321433624017_n.jpg"
+           style="object-position:center 35%;" alt="">
+    </div>
+  </div>
+</section>
+
+<!-- CONTATO -->
+<section id="contato">
+  <div class="section-label reveal">Quer se juntar?</div>
+  <h2 class="contato-heading reveal d1">
+    FALE COM<br><span>A GENTE</span>
+  </h2>
+  <p class="contato-text reveal d2">
+    Tem dúvidas, quer participar ou levar o evangelismo para sua cidade? Fala com a gente pelo WhatsApp!
+  </p>
+  <div class="reveal d3">
+    <a class="wa-btn"
+       href="https://wa.me/5512997029134?text=Ol%C3%A1%21+Quero+saber+mais+sobre+o+Seeds+Movement%21"
+       target="_blank" rel="noopener">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      WhatsApp · Fale Conosco
+    </a>
+  </div>
+
+  <div class="contact-meta reveal d4">
+    <div class="contact-meta-item">
+      <div class="contact-meta-label">Local</div>
+      <div class="contact-meta-value">Ubatuba, SP</div>
+    </div>
+    <div class="contact-meta-item">
+      <div class="contact-meta-label">Quando</div>
+      <div class="contact-meta-value">Toda Sexta · 20H</div>
+    </div>
+    <div class="contact-meta-item">
+      <div class="contact-meta-label">Onde</div>
+      <div class="contact-meta-value">Pistinha de Skate</div>
+    </div>
+    <div class="contact-meta-item">
+      <div class="contact-meta-label">Liderança</div>
+      <div class="contact-meta-value">Davi Rodrigues</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">SEEDS MOVEMENT</div>
+  <div class="footer-copy">Ubatuba · Igreja Ágape · Evangelismo nas Ruas</div>
+</footer>
+
+<script>
+  (function () {
+    const nav        = document.getElementById('sm-nav');
+    const heroBg     = document.getElementById('hero-bg');
+    const hamburger  = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobClose   = document.getElementById('mob-close');
+
+    const isMobile = () => window.innerWidth <= 768;
+
+    // Hamburger
+    const openMenu  = () => { mobileMenu.classList.add('open'); hamburger.classList.add('open'); document.body.style.overflow = 'hidden'; };
+    const closeMenu = () => { mobileMenu.classList.remove('open'); hamburger.classList.remove('open'); document.body.style.overflow = ''; };
+    hamburger.addEventListener('click', openMenu);
+    mobClose.addEventListener('click', closeMenu);
+    document.querySelectorAll('.mob-link').forEach(l => l.addEventListener('click', closeMenu));
+
+    // Nav scroll effect + hero parallax
+    const onScroll = () => {
+      const y    = window.scrollY;
+      const hPad = isMobile() ? '24px' : '56px';
+      if (y > 60) {
+        nav.style.background       = 'rgba(8,8,8,0.94)';
+        nav.style.backdropFilter   = 'blur(14px)';
+        nav.style.borderBottom     = '1px solid rgba(230,194,40,0.12)';
+        nav.style.padding          = `16px ${hPad}`;
+      } else {
+        nav.style.background       = 'transparent';
+        nav.style.backdropFilter   = 'none';
+        nav.style.borderBottom     = 'none';
+        nav.style.padding          = isMobile() ? '20px 24px' : `24px ${hPad}`;
+      }
+      if (heroBg && !isMobile()) {
+        heroBg.style.transform = `translateY(${y * 0.32}px)`;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal, .reveal-l, .reveal-r').forEach(el => observer.observe(el));
+
+    // Smooth anchor scroll
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const id     = link.getAttribute('href').slice(1);
+        const target = document.getElementById(id);
+        if (target) {
+          e.preventDefault();
+          const offset = target.getBoundingClientRect().top + window.scrollY - 72;
+          window.scrollTo({ top: offset, behavior: 'smooth' });
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
